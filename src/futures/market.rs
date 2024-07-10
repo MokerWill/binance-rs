@@ -22,7 +22,7 @@
 
 use crate::util::{build_request, build_signed_request};
 use crate::futures::model::{
-    AggTrades, BookTickers, KlineSummaries, KlineSummary, LiquidationOrders, MarkPrices,
+    AggTrades, BookTickers, KlineSummaries, KlineSummary, MarkPrices,
     OpenInterest, OpenInterestHist, OrderBook, PriceStats, SymbolPrice, Tickers, Trades,
 };
 use crate::client::Client;
@@ -243,10 +243,6 @@ impl FuturesMarket {
 
     pub fn get_mark_prices(&self) -> Result<MarkPrices> {
         self.client.get(API::Futures(Futures::PremiumIndex), None)
-    }
-
-    pub fn get_all_liquidation_orders(&self) -> Result<LiquidationOrders> {
-        self.client.get(API::Futures(Futures::AllForceOrders), None)
     }
 
     pub fn open_interest<S>(&self, symbol: S) -> Result<OpenInterest>

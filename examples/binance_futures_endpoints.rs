@@ -91,13 +91,6 @@ fn market_data() {
         Err(e) => println!("Error: {}", e),
     }
 
-    match market.get_all_liquidation_orders() {
-        Ok(LiquidationOrders::AllLiquidationOrders(answer)) => {
-            println!("First liquidation order: {:?}", answer[0]);
-        }
-        Err(e) => println!("Error: {}", e),
-    }
-
     match market.open_interest("btcusdt") {
         Ok(answer) => println!("Open interest: {:?}", answer),
         Err(e) => println!("Error: {}", e),

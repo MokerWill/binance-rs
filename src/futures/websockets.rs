@@ -7,7 +7,6 @@ use crate::model::{
 };
 use crate::futures::model;
 use error_chain::bail;
-use url::Url;
 use serde::{Deserialize, Serialize};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::net::TcpStream;
@@ -132,8 +131,7 @@ impl<'a> FuturesWebSockets<'a> {
     }
 
     fn connect_wss(&mut self, wss: &str) -> Result<()> {
-        let url = Url::parse(wss)?;
-        match connect(url) {
+        match connect(wss) {
             Ok(answer) => {
                 self.socket = Some(answer);
                 Ok(())
@@ -194,7 +192,7 @@ impl<'a> FuturesWebSockets<'a> {
     pub fn event_loop(&mut self, running: &AtomicBool) -> Result<()> {
         while running.load(Ordering::Relaxed) {
             if let Some(ref mut socket) = self.socket {
-                let message = socket.0.read_message()?;
+                let message = socket.0.read()?;
                 match message {
                     Message::Text(msg) => {
                         if let Err(e) = self.handle_msg(&msg) {
@@ -202,7 +200,7 @@ impl<'a> FuturesWebSockets<'a> {
                         }
                     }
                     Message::Ping(payload) => {
-                        socket.0.write_message(Message::Pong(payload)).unwrap();
+                        socket.0.send(Message::Pong(payload)).unwrap();
                     }
                     Message::Pong(_) | Message::Binary(_) | Message::Frame(_) => (),
                     Message::Close(e) => bail!(format!("Disconnected {:?}", e)),

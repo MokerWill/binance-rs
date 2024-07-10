@@ -6,6 +6,7 @@ use reqwest::StatusCode;
 use reqwest::blocking::Response;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue, USER_AGENT, CONTENT_TYPE};
 use sha2::Sha256;
+use simd_json::from_slice;
 use serde::de::DeserializeOwned;
 use crate::api::API;
 
@@ -158,7 +159,9 @@ impl Client {
 
     fn handler<T: DeserializeOwned>(&self, response: Response) -> Result<T> {
         match response.status() {
-            StatusCode::OK => Ok(response.json::<T>()?),
+            StatusCode::OK => {
+                Ok(from_slice::<T>(&mut response.text().unwrap().into_bytes()).unwrap())
+            }
             StatusCode::INTERNAL_SERVER_ERROR => {
                 bail!("Internal Server Error");
             }
@@ -169,7 +172,7 @@ impl Client {
                 bail!("Unauthorized");
             }
             StatusCode::BAD_REQUEST => {
-                let error: BinanceContentError = response.json()?;
+                let error: BinanceContentError = from_slice::<BinanceContentError>(& mut response.text().unwrap().into_bytes()).unwrap();
 
                 Err(ErrorKind::BinanceError(error).into())
             }
